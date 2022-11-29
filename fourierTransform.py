@@ -70,16 +70,22 @@ sequence = readsArr[0][3000: 6000: 1]           #getting subsection of sequence
 rollingWindow = 50
 halfWindow = int(rollingWindow/2)
 rollingMin = getRollingMin(sequence, rollingWindow)
-rollingMinAvg = getRollingAvg(rollingMin, rollingWindow)
+rollingMinAvg = getRollingAvg(rollingMin, rollingWindow)            #average of the rolling min, for smoothing
 
+rollingAvg = getRollingAvg(sequence, window=8)                      #average of the sequence vector, for smoothing
+
+normalized = [a_i - b_i for a_i, b_i in zip(rollingAvg[46:len(rollingAvg)-46], rollingMinAvg)]          #sequence vector minus rolling min avg (expected base current fluctuation vector)
 
 transform = np.fft.fft(sequence)
 
 print(transform)
 
-plt.plot([i for i in range(len(sequence))], sequence)        #sequence
-plt.plot([i for i in range(halfWindow, len(sequence)-halfWindow)], rollingMin)
-plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], rollingMinAvg)
+plt.plot([i for i in range(len(sequence))], sequence)                                           #sequence
+#plt.plot([i for i in range(halfWindow, len(sequence)-halfWindow)], rollingMin)
+#plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], rollingMinAvg)
+#plt.plot([i for i in range(4, len(sequence)-4)], rollingAvg)
+plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], normalized)
+
 #plt.plot([i for i in range(3000)], transform)       #plotting real component of transform
 #plt.plot([i for i in range(3000)], transform.imag)  #plotting imaginary component of transform
 plt.show()
