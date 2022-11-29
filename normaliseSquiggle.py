@@ -60,25 +60,14 @@ def getRollingAvg(sequence, window=50):
     return rollingAvg
 
 
-def getNormalisedSequence(sequence, rollingWindow=50):
-    rollingMin = getRollingMin(sequence, rollingWindow)
-    rollingMinAvg = getRollingAvg(rollingMin, rollingWindow)            #average of the rolling min, for smoothing
 
-    rollingAvg = getRollingAvg(sequence, window=8)                      #average of the sequence vector, for smoothing
-
-    normalised = [a_i - b_i for a_i, b_i in zip(rollingAvg[46:len(rollingAvg)-46], rollingMinAvg)]          #sequence vector minus rolling min avg (expected base current fluctuation vector)
-
-    return normalised
-
-
-
-def getClusters(sequence, noOfClusters):
+def getClusters(sequence, noOfClusters, plot=False):
     '''
         calculates n centroids (where n=noOfClusters) around which data is clustered.
     '''
 
     prevCentroids = [0 for i in range(noOfClusters)]
-    centroids = random.sample(range(1, math.floor(max(sequence))), noOfClusters)
+    centroids = random.sample(sequence, noOfClusters)
 
     clusters = [[] for i in centroids]
     clustersAggregate = [0 for i in range(noOfClusters)]
@@ -107,9 +96,43 @@ def getClusters(sequence, noOfClusters):
         if centroids == prevCentroids:
             done = True
 
+    if plot:
+        #plotting clusters
+        for c in range(noOfClusters):
+            plt.plot([i for i in range(len(sequence))], [centroids[c] for i in range(len(sequence))])
+
+
+
     return centroids
 
         
+
+def getConvNormalisedSequence(sequence, rollingWindow=50):
+    '''
+        old normalisation method based on convolutions - has issues.
+    '''
+    rollingMin = getRollingMin(sequence, rollingWindow)
+    rollingMinAvg = getRollingAvg(rollingMin, rollingWindow)            #average of the rolling min, for smoothing
+
+    rollingAvg = getRollingAvg(sequence, window=8)                      #average of the sequence vector, for smoothing
+
+    normalised = [a_i - b_i for a_i, b_i in zip(rollingAvg[46:len(rollingAvg)-46], rollingMinAvg)]          #sequence vector minus rolling min avg (expected base current fluctuation vector)
+
+    return normalised
+
+
+def getClustNormalisedSequence(sequence, noOfClusters):
+    sequenceMin=min(sequence)
+    centroids = getClusters(sequence, noOfClusters)
+    newSequence = []
+    differences = [0 for i in range(noOfClusters)]
+    for component in sequence:
+        for i in range(noOfClusters):
+            differences[i] = abs(centroids[i]-component)
+
+        newSequence.append(centroids[differences.index(min(differences))]-sequenceMin)
+    
+    return newSequence
 
         
 
@@ -118,29 +141,30 @@ if __name__ == "__main__":
     readsArr, metaData = loadReads(withMetadata=True)
 
 
-    sequence = readsArr[0][3000: 6000: 1]           #getting subsection of sequence
-
-
-    rollingWindow = 50
-    halfWindow = int(rollingWindow/2)
-
-    normalised = getNormalisedSequence(sequence, rollingWindow)
-
-
+    sequenceID = metaData["id"].iloc[76]
+    print(f"sequence ID: {sequenceID}")
+    sequence = readsArr[76][3000: 6000: 1].tolist()           #getting subsection of sequence
     plt.plot([i for i in range(len(sequence))], sequence)                                           #sequence
+
+
+    #rollingWindow = 50
+    #halfWindow = int(rollingWindow/2)
+
+    #normalised = getConvNormalisedSequence(sequence, rollingWindow)     #has problems
+    #plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], normalised)
+
+    noOfClusters = 4
+    #centroids = getClusters(sequence, noOfClusters)
+    #print(f"centroids:\n{centroids}")
+    normalised = getClustNormalisedSequence(sequence, noOfClusters)
+    plt.plot([i for i in range(len(normalised))], normalised)                                           #sequence
+
     #plt.plot([i for i in range(halfWindow, len(sequence)-halfWindow)], rollingMin)
     #plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], rollingMinAvg)
     #plt.plot([i for i in range(4, len(sequence)-4)], rollingAvg)
-    plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], normalised)
 
 
-    noOfClusters = 5
-    centroids = getClusters(normalised, noOfClusters)
-    print(f"centroids:\n{centroids}")
 
-    #plotting clusters
-    for c in range(noOfClusters):
-        plt.plot([i for i in range(len(sequence))], [centroids[c] for i in range(len(sequence))])
 
 
 
