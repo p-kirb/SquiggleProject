@@ -1,4 +1,5 @@
 import random
+import csv
 import math
 import numpy as np
 #from dtw import *
@@ -8,6 +9,7 @@ import itertools
 from pathlib import Path
 import h5py
 import pandas as pd
+import time
 
 import matplotlib.pyplot as plt
 
@@ -90,7 +92,8 @@ def getClusters(sequence, noOfClusters, plot=False):
 
         prevCentroids = centroids.copy()
         for i in range(noOfClusters):
-            centroids[i] = clustersAggregate[i]/len(clusters[i])
+            if len(clusters[i]) != 0:
+                centroids[i] = clustersAggregate[i]/len(clusters[i])
 
 
         if centroids == prevCentroids:
@@ -107,7 +110,7 @@ def getClusters(sequence, noOfClusters, plot=False):
 
         
 
-def getConvNormalisedSequence(sequence, rollingWindow=50):
+def convNormalise(sequence, rollingWindow=50):
     '''
         old normalisation method based on convolutions - has issues.
     '''
@@ -121,20 +124,65 @@ def getConvNormalisedSequence(sequence, rollingWindow=50):
     return normalised
 
 
-def getClustNormalisedSequence(sequence, noOfClusters):
-    sequenceMin=min(sequence)
+def clustNormalise(sequence, noOfClusters):
+    '''
+        Normalises vector to series of values in range 1-4
+    '''
     centroids = getClusters(sequence, noOfClusters)
+    centroids.sort()
+    normalValues = [i for i in range(1,noOfClusters+1)]
     newSequence = []
     differences = [0 for i in range(noOfClusters)]
     for component in sequence:
         for i in range(noOfClusters):
             differences[i] = abs(centroids[i]-component)
 
-        newSequence.append(centroids[differences.index(min(differences))]-sequenceMin)
+        newSequence.append(normalValues[differences.index(min(differences))])
     
-    return newSequence
+    return np.array(newSequence, dtype=np.byte)        #doesn't do any compression when writing to file
 
         
+def clustNormaliseAll(writeToCSV=False):
+    '''
+        normalises all vectors in the read and returns the array of normalised vectors.
+    '''
+    noOfClusters = 4
+    readsArr = loadReads()
+    vectorsList = []
+    print(f"normalising {len(readsArr)} vectors.")
+    start = time.time()
+    i = 0
+    if(writeToCSV):
+        with open("normalisedVectors.csv", "w") as f:
+            w = csv.writer(f)
+            for squiggle in readsArr:
+                if i % 100 == 0: print(i)
+                i += 1
+                normalised = clustNormalise(squiggle.tolist(), noOfClusters)
+                vectorsList.append(normalised)
+                w.writerow(normalised)
+
+    else:
+        for squiggle in readsArr:
+            normalised = clustNormalise(squiggle.tolist(), noOfClusters)
+            vectorsList.append(normalised)
+
+    print(f"Took {time.time()-start} seconds.\n")
+
+    return vectorsList
+
+    '''
+    f = h5py.File("normalisedVectors.hdf5", "a")
+    dt = h5py.vlen_dtype(np.dtype("byte"))
+    vectorsDset = f.create_dataset("vectors", (len(readsArr),), dtype=dt)
+
+    for i in range(len(readsArr)):
+        vectorsDset[i] = clustNormalise(readsArr[i].tolist(), noOfClusters)
+        if i % 100 == 0: print(i)
+
+    f.close()
+    return
+    '''
 
 if __name__ == "__main__":
 
@@ -150,13 +198,13 @@ if __name__ == "__main__":
     #rollingWindow = 50
     #halfWindow = int(rollingWindow/2)
 
-    #normalised = getConvNormalisedSequence(sequence, rollingWindow)     #has problems
+    #normalised = convNormalise(sequence, rollingWindow)     #has problems
     #plt.plot([i for i in range(rollingWindow, len(sequence)-rollingWindow)], normalised)
 
     noOfClusters = 4
     #centroids = getClusters(sequence, noOfClusters)
     #print(f"centroids:\n{centroids}")
-    normalised = getClustNormalisedSequence(sequence, noOfClusters)
+    normalised = clustNormalise(sequence, noOfClusters)
     plt.plot([i for i in range(len(normalised))], normalised)                                           #sequence
 
     #plt.plot([i for i in range(halfWindow, len(sequence)-halfWindow)], rollingMin)
