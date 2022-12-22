@@ -19,12 +19,12 @@ def loadReads(f5_file="../basic_testdata/FAT10833_ab5a8994_951.fast5", withMetad
     '''
         returns list of numpy arrays representing reads as well as dataframe containing reads metadata.
     '''
+    print("reading squiggles file...")
+    start = time.time()
     reads = []
     if withMetadata:
         ids = []
         length = []
-
-    if withMetadata:
         with get_fast5_file(f5_file, mode="r") as f5:
             for read in f5.get_reads():
                 raw_data = read.get_raw_data()
@@ -36,6 +36,7 @@ def loadReads(f5_file="../basic_testdata/FAT10833_ab5a8994_951.fast5", withMetad
                 #print(read.read_id, raw_data, min_rdata, max_rdata)
 
         z = list(zip(ids, length))
+        print(f"Took {time.time()-start} seconds.\n")
         return reads, pd.DataFrame(z, columns=["id", "length"])
 
     else:
@@ -43,8 +44,9 @@ def loadReads(f5_file="../basic_testdata/FAT10833_ab5a8994_951.fast5", withMetad
             for read in f5.get_reads():
                 raw_data = read.get_raw_data()
                 reads.append(raw_data)
-
+        print(f"Took {time.time()-start} seconds.\n")
         return reads
+
 
 
 def getRollingMin(sequence, window=50):
@@ -142,18 +144,19 @@ def clustNormalise(sequence, noOfClusters):
     return np.array(newSequence, dtype=np.byte)        #doesn't do any compression when writing to file
 
         
-def clustNormaliseAll(writeToCSV=False):
+
+def clustNormaliseAll(sourceFile, writeToCSV=False, writeTohdf5=False, path=""):
     '''
         normalises all vectors in the read and returns the array of normalised vectors.
     '''
     noOfClusters = 4
-    readsArr = loadReads()
+    readsArr = loadReads(sourceFile)
     vectorsList = []
     print(f"normalising {len(readsArr)} vectors.")
     start = time.time()
     i = 0
     if(writeToCSV):
-        with open("normalisedVectors.csv", "w") as f:
+        with open(path+"normalisedVectors.csv", "w") as f:
             w = csv.writer(f)
             for squiggle in readsArr:
                 if i % 100 == 0: print(i)
@@ -162,10 +165,23 @@ def clustNormaliseAll(writeToCSV=False):
                 vectorsList.append(normalised)
                 w.writerow(normalised)
 
+    elif(writeTohdf5):
+        f = h5py.File(path+"normalisedVectors.hdf5", "a")
+        dt = h5py.vlen_dtype(np.dtype("byte"))
+        vectorsDset = f.create_dataset("vectors", (len(readsArr),), dtype=dt)
+
+        for i in range(len(readsArr)):
+            normalised = clustNormalise(readsArr[i].tolist(), noOfClusters)
+            vectorsDset[i] = normalised
+            vectorsList.append(normalised)            
+            if i % 100 == 0: print(i)
+
+        f.close()
+
     else:
         for squiggle in readsArr:
             normalised = clustNormalise(squiggle.tolist(), noOfClusters)
-            vectorsList.append(normalised)
+            vectorsList.append(normalised)            
 
     print(f"Took {time.time()-start} seconds.\n")
 

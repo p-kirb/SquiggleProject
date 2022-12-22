@@ -16,11 +16,12 @@ import numpy as np
 import csv
 import time
 import h5py
+import normaliseSquiggle
 
 def loadVectorsFromCSV():
     print("loading vectors from csv")
     start = time.time()
-    with open("normalisedVectors.csv", "r") as f:
+    with open("basicNormalised/normalisedVectors.csv", "r") as f:
         vectors = list(csv.reader(f, delimiter=","))
     
     print(f"Took {time.time()-start} seconds.\n")
@@ -29,7 +30,7 @@ def loadVectorsFromCSV():
 def loadVectorsFromHDF5():
     print("loading vectors from HDF5")
     start = time.time()
-    f = h5py.File("normalisedVectors.hdf5", "r")
+    f = h5py.File("similarNormalised/normalisedVectors.hdf5", "r")
 
     vectors = f["vectors"]
     #print(vectors[0])
@@ -63,12 +64,24 @@ def getSimilarities(vector, vectorsDS):
 
 
 if __name__ == "__main__":
+    vecToCompareIndex = 0
     vectors = loadVectorsFromHDF5()
 
-    vecToCompare = vectors[0][3000:6000]
+    #vecToCompare = vectors[0][3000:6000]
+
+    vecToCompare = vectors[vecToCompareIndex][0:3000]
+
 
     similarities = getSimilarities(vecToCompare, vectors)
 
     mostSimilarIndices = np.argsort(similarities)[::-1][:10]
     print(mostSimilarIndices)
+    
+
+    #mostSimilarIndices = [3759, 1248, 1260, 1259, 1258, 1257, 1256, 1255, 1254, 1253]
+    #loading metadata file to get IDs of the squiggles with the highest match to chosen squiggle.
+    reads, metaData = normaliseSquiggle.loadReads("../similar_testdata/similar_squiggles.fast5", True)
+    print(metaData.iloc[[vecToCompareIndex]])
+    for index in mostSimilarIndices:
+        print(metaData.iloc[[index]])
 
