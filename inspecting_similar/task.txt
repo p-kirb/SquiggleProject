@@ -1,0 +1,1 @@
+Take 2 squiggles with very high similarity, and manipulate one of them along time axis so that they look (almost) identical.
