@@ -1,3 +1,5 @@
+autoencoder/test results/
+
 #data files
 *.csv
 *.hdf5
