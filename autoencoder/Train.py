@@ -2,7 +2,7 @@ from torch import optim
 from LSTMAutoencoder import LSTM
 from SquigglesDataset import SquigglesDataset
 from torch.utils.data import DataLoader
-from settings import *
+from Settings import *
 import time
 import matplotlib.pyplot as plt
 
@@ -37,9 +37,9 @@ def train(dataloader, model):
 
 
             loss = lossFunction(torch.squeeze(y_pred, -1), y.to(device))
-            if batch % batch_size == 0:
-                print(f"prediction: {torch.squeeze(y_pred, -1)}")
-                print(f"target: {y}")
+            #if batch % batch_size == 0:
+            #    print(f"prediction: {torch.squeeze(y_pred, -1)}")
+            #    print(f"target: {y}")
 
             state_h = state_h.detach()                  #freezing h and c tensors so that gradient descent doesn't update their values.
             state_c = state_c.detach()

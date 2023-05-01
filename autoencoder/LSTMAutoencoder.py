@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from settings import *
+from Settings import *
 
 class LSTM(nn.Module):
     def __init__(self):
@@ -14,6 +14,14 @@ class LSTM(nn.Module):
         #print(f"input dimensions: {x.shape}")
         #print(f"prev_state dimensions: {prev_state[0].shape}   {prev_state[1].shape}")
         transformed = torch.unsqueeze(x, -1)
+
+
+        if not self.training:
+            #only use this line for prediction
+            transformed = transformed.unsqueeze(-1)
+
+
+
         #print(f"transformed dimensions: {transformed.shape}")
 
         output, state = self.lstm(transformed, prev_state)
