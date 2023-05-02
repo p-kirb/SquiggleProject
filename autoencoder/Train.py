@@ -35,6 +35,9 @@ def train(dataloader, model):
 
             y_pred, (state_h, state_c) = model(x.to(device), (state_h, state_c))
 
+            print(y[0])
+            print(y_pred.squeeze(-1)[0])
+
 
             loss = lossFunction(torch.squeeze(y_pred, -1), y.to(device))
             #if batch % batch_size == 0:
@@ -46,6 +49,7 @@ def train(dataloader, model):
 
             loss.backward()
             optimizer.step()
+            raise ValueError("Peep")
 
             print({ 'epoch': epoch, 'batch': batch, 'loss': loss.item() })
             batchLosses.append(loss.item())

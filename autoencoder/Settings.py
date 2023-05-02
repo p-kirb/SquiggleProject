@@ -32,7 +32,7 @@ model_path = 'model_weights.pt'
 #training
 batch_size = 256
 epochs = 10
-lossFunction = nn.MSELoss()#nn.CrossEntropyLoss()
+lossFunction = nn.CrossEntropyLoss()#nn.MSELoss()
 lr = 0.001
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
