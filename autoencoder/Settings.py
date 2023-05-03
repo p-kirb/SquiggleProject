@@ -23,7 +23,7 @@ subset = ["00014eb4-4e2c-4087-ac24-57dea735b7b4", "601f7bc7-3c09-4a78-a9b7-097bd
 
 #model hyperparameters
 input_size = 1
-hidden_size = 200
+hidden_size = 50
 num_layers = 1
 dropout = 0
 model_path = 'model_weights.pt'
@@ -31,7 +31,7 @@ model_path = 'model_weights.pt'
 
 #training
 batch_size = 256
-epochs = 10
+epochs = 15
 lossFunction = nn.MSELoss()#nn.CrossEntropyLoss()
 lr = 0.001
 
