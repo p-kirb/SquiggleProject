@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 #dataset
-sequenceLength = 100#60
+sequenceLength = 200#60
 datapath = "../../similar_testdata/similar_squiggles.fast5"
 subset = ["00014eb4-4e2c-4087-ac24-57dea735b7b4", "601f7bc7-3c09-4a78-a9b7-097bddcde809",
           "1b6939ba-4a35-4696-bc6f-2ddb3368266e", "95c03c50-57a5-4092-9a5f-87182d06a12c",
@@ -23,7 +23,7 @@ subset = ["00014eb4-4e2c-4087-ac24-57dea735b7b4", "601f7bc7-3c09-4a78-a9b7-097bd
 
 #model hyperparameters
 input_size = 1
-hidden_size = 50
+hidden_size = 30
 num_layers = 1
 dropout = 0
 model_path = 'model_weights.pt'
@@ -36,6 +36,11 @@ lossFunction = nn.MSELoss()#nn.CrossEntropyLoss()
 lr = 0.001
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+
+#producing embeddings
+nGramStep = 20
 
 
 
