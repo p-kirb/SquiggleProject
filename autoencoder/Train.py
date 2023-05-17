@@ -14,7 +14,7 @@ def train(dataloader, model):
     model.train()
     model = model.to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.SGD(model.parameters(), lr=lr)#optim.Adam(model.parameters(), lr=lr)
 
     epochLosses = []
     for epoch in range(epochs):
