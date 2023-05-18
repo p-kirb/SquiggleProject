@@ -24,7 +24,7 @@ subset = ["00014eb4-4e2c-4087-ac24-57dea735b7b4", "601f7bc7-3c09-4a78-a9b7-097bd
 #model hyperparameters
 input_size = 1
 hidden_size = 30
-num_layers = 1
+num_layers = 2#1
 dropout = 0
 model_path = 'model_weights.pt'
 
