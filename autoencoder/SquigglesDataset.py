@@ -1,8 +1,7 @@
 import pandas as pd
 import torch
 from Settings import *
-from HelperFunctions import fullNormalise
-from ont_fast5_api.fast5_interface import get_fast5_file
+from HelperFunctions import loadReads, fullNormalise
 import time
 from sklearn.preprocessing import MinMaxScaler
 
@@ -16,7 +15,7 @@ from sklearn.preprocessing import MinMaxScaler
 class SquigglesDataset(torch.utils.data.Dataset):
     def __init__(self, filepath="../../similar_testdata/similar_squiggles.fast5"):
         self.filepath = filepath
-        self.squiggles, self.ids = self.loadReads()
+        self.squiggles, self.ids = loadReads()
         print(type(self.squiggles[0]))
         self.squiggles = [fullNormalise(i) for i in self.squiggles]
         print(type(self.squiggles[0]))
@@ -28,23 +27,6 @@ class SquigglesDataset(torch.utils.data.Dataset):
         self.length = self.startIndices[-1] + len(self.squiggles[-1]) - sequenceLength
         print(f"total length: {self.length}")
         self.scaler = MinMaxScaler(feature_range=(-1,1))         #scales all values between -1 and 1 (the output range of LSTM model)
-
-
-    def loadReads(self):
-
-        print("reading squiggles file...")
-        startTime = time.time()
-        reads = []
-        ids = []
-        with get_fast5_file(self.filepath, mode="r") as f5:
-            for read in f5.get_reads():
-                if read.read_id in subset:
-                    raw_data = read.get_raw_data()
-                    reads.append(raw_data)
-                    ids.append(read.read_id)
-
-        print(f"Took {time.time()-startTime}s.")
-        return reads, ids
         
 
     def getStarts(self):

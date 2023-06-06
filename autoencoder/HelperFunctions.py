@@ -1,4 +1,22 @@
 import numpy as np
+from ont_fast5_api.fast5_interface import get_fast5_file
+from Settings import datapath, subset
+
+
+def loadReads():
+
+    print("reading squiggles file...")
+    reads = []
+    ids = []
+    with get_fast5_file(datapath, mode="r") as f5:
+        for read in f5.get_reads():
+            if read.read_id in subset:
+                raw_data = read.get_raw_data()
+                reads.append(raw_data)
+                ids.append(read.read_id)
+
+    return reads, ids
+
 
 def zScoreNormalise(sequence):
     # print("z-score normalising")
