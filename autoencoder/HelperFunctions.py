@@ -1,6 +1,8 @@
 import numpy as np
 from ont_fast5_api.fast5_interface import get_fast5_file
 from Settings import datapath, subset
+from numpy.linalg import norm
+
 
 
 def loadReads():
@@ -51,3 +53,24 @@ def fullNormalise(sequence):
     s = removeSpikes(s)
 
     return s
+
+
+
+#gets the max COSINE SIMILARITY between given vector and list of vectors (divided by length of veclist)
+def getMaxSim(vec, vecList):
+    maxSim = 0
+    for other in vecList:
+        sim = np.dot(vec,other)/(norm(vec)*norm(other))
+        if sim > maxSim: maxSim = sim
+
+    return maxSim
+
+
+#gets the min EUCLIDEAN DISTANCE between given vector and list of vectors
+def getMinDist(vec, vecList):
+    minDist = 1000
+    for other in vecList:
+        dist = norm(vec-other)
+        if dist < minDist: minDist = dist
+
+    return minDist

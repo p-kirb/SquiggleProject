@@ -3,8 +3,8 @@ from Settings import *
 from HelperFunctions import loadReads
 import math
 
-
-with open("cSimilarties.json") as f:
+#change this file to test different squiggle similarity dictionaries
+with open("SquiggleSimilarties.json") as f:
     similarities = json.load(f)
 
 
@@ -24,12 +24,13 @@ for i in range(len(ids)):
             bothWaysDict[ids[i]][ids[j]] = similarities[ids[i]][ids[j]] + similarities[ids[j]][ids[i]]
 similarities = bothWaysDict
 '''
-#scaling by log of length
 
+
+#scaling by log of length
 for outerSquiggle, innerSquiggles in similarities.items():
     for id, length in lengths.items():
         if id in innerSquiggles:
-            innerSquiggles[id] = innerSquiggles[id] * math.log(length)
+            innerSquiggles[id] = innerSquiggles[id] * math.log(length, 50)
 
 
 
