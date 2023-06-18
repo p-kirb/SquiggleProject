@@ -56,14 +56,14 @@ def fullNormalise(sequence):
 
 
 
-#gets the max COSINE SIMILARITY between given vector and list of vectors (divided by length of veclist)
+#gets the max COSINE SIMILARITY between given vector and list of vectors (squared to amplify high similarity areas)
 def getMaxSim(vec, vecList):
     maxSim = 0
     for other in vecList:
         sim = np.dot(vec,other)/(norm(vec)*norm(other))
         if sim > maxSim: maxSim = sim
 
-    return maxSim
+    return maxSim ** 2
 
 
 #gets the min EUCLIDEAN DISTANCE between given vector and list of vectors
